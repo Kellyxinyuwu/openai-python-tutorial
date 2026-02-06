@@ -25,7 +25,7 @@ and your goal is to respond with a structured solution, including the steps take
 For each step, provide a description and the action taken.
 """
 
-
+# json schema
 def get_ticket_response_json(query):
     response = client.chat.completions.create(
         model=MODEL,
@@ -33,7 +33,7 @@ def get_ticket_response_json(query):
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": query},
         ],
-        response_format={
+        response_format = {
             "type": "json_schema",
             "json_schema": {
                 "name": "ticket_resolution",
@@ -42,9 +42,25 @@ def get_ticket_response_json(query):
                     "properties": {
                         "steps": {
                             "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "description": {
+                                        "type": "string",
+                                        "description": "Description of the step taken to resolve the issue",
+                                    },
+                                    "action": {
+                                        "type": "string",
+                                        "description": "Action taken to resolve the issue at this step",
+                                    },
+                                },
+                                "required": ["description", "action"],
+                                "additionalProperties": False,
+                            },
                         },
                         "final_resolution": {
                             "type": "string",
+                            "description": "The final message that will be sent to the customer summarizing the resolution",
                         },
                     },
                     "required": ["steps", "final_resolution"],
@@ -52,12 +68,12 @@ def get_ticket_response_json(query):
                 },
                 "strict": True,
             },
-        },
+        }
     )
 
     return response.choices[0].message
 
-
+# response
 response = get_ticket_response_json(query)
 response.model_dump()
 
